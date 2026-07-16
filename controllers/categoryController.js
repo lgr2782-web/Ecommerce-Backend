@@ -22,7 +22,7 @@ const createCategory = async (req, res) => {
   const { name, descripcion } = req.body; // <-- Corregido a 'descripcion'
   try {
     const result = await pool.query(
-      'INSERT INTO categories (name, descripcion, is_active) VALUES ($1, $2, true) RETURNING *',
+      'INSERT INTO categories (name, description, is_active) VALUES ($1, $2, true) RETURNING *',
       [name, descripcion]
     );
     res.status(201).json(result.rows[0]);
