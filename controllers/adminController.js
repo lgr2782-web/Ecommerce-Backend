@@ -21,6 +21,18 @@ exports.createUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Asegúrate de que el middleware de autenticación (ej. requireAuth, isAdmin) esté presente
+router.get('/users', requireAuth, isAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, role, is_active, created_at FROM users ORDER BY id DESC'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+});
 
 // 2. Borrado lógico de usuarios (Inactivación)
 exports.deleteUserLogically = async (req, res) => {
