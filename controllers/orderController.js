@@ -126,3 +126,34 @@ exports.checkout = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+// Al final de tu orderController.js añade:
+
+exports.approveOrder = async (req, res) => {
+  const orderId = req.params.id;
+  const nuevoEstado = 'Pagado y Listo para Envío';
+
+  try {
+    // 1. Actualizamos el estado de la orden en la base de datos de Supabase
+    const resultado = await db.query(
+      'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+      [nuevoEstado, orderId]
+    );
+
+    // 2. Si la orden no existía en la base de datos, avisamos
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ message: 'La orden especificada no existe.' });
+    }
+
+    // 3. Respondemos con éxito total 200 OK
+    res.status(200).json({
+      success: true,
+      message: 'Orden aprobada y estado actualizado correctamente.',
+      order: resultado.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error al aprobar la orden en el controlador:', error.message);
+    res.status(500).json({ error: 'Error interno del servidor al procesar la aprobación.' });
+  }
+};

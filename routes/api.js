@@ -98,6 +98,9 @@ router.put(
   authorizeRoles('Administrador'), 
   adminController.updateCompanyProfile // O el nombre que tenga tu método en el controlador
 );
+// ... tus otras rutas de admin ...
 
+// 👇 Añade esta línea (Asegúrate de que use PUT y coincida con la URL del frontend)
+router.put('/admin/orders/:id/approve', authMiddleware, adminMiddleware, orderController.approveOrder);
 
 module.exports = router;
