@@ -75,6 +75,7 @@ router.delete('/categories/:id', verifyToken, authorizeRoles('Colaborador', 'Adm
 
 
 // === RUTAS EXCLUSIVAS ADMIN ===
+router.get('/admin/users', verifyToken, authorizeRoles('Administrador'), adminController.getUsers);
 router.post('/admin/users', verifyToken, authorizeRoles('Administrador'), adminController.createUser);
 router.delete('/admin/users/:id', verifyToken, authorizeRoles('Administrador'), adminController.deleteUserLogically);
 router.get('/admin/dashboard', verifyToken, authorizeRoles('Administrador'), adminController.getSalesDashboard);
