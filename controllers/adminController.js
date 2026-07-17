@@ -80,3 +80,36 @@ exports.updateCompanyProfile = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// 1. Obtener listado de órdenes (SINPE) para verificar
+exports.getOrders = async (req, res) => {
+  try {
+    // Consulta a tu tabla de órdenes. Traemos el id, el nombre del cliente (asumiendo relación o campo),
+    // el monto total, la referencia de pago sinpe y el estado del pedido.
+    const result = await db.query(
+      `SELECT o.id, u.name as customer, o.total_amount as total, o.sinpe_reference as reference, o.status 
+       FROM orders o 
+       JOIN users u ON o.user_id = u.id 
+       ORDER BY o.created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener órdenes:', error);
+    res.status(500).json({ error: 'Error interno al cargar órdenes.' });
+  }
+};
+
+// 2. Obtener el perfil de la empresa (Fila única con ID = 1)
+exports.getCompanyProfile = async (req, res) => {
+  try {
+    const result = await db.query('SELECT name, cedula_juridica, email, phone, address FROM company_profile WHERE id = 1');
+    if (result.rows.length === 0) {
+      // Si la tabla está vacía, devolvemos un objeto vacío para evitar errores en React
+      return res.json({ name: '', cedula_juridica: '', email: '', phone: '', address: '' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error al obtener perfil de la empresa:', error);
+    res.status(500).json({ error: 'Error interno al cargar perfil de empresa.' });
+  }
+};

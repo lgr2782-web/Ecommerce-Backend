@@ -81,4 +81,8 @@ router.delete('/admin/users/:id', verifyToken, authorizeRoles('Administrador'), 
 router.get('/admin/dashboard', verifyToken, authorizeRoles('Administrador'), adminController.getSalesDashboard);
 router.post('/admin/company', verifyToken, authorizeRoles('Administrador'), adminController.updateCompanyProfile);
 
+router.get('/admin/orders', verifyToken, authorizeRoles('Administrador'), adminController.getOrders);
+router.get('/admin/company', verifyToken, authorizeRoles('Administrador'), adminController.getCompanyProfile);
+
+
 module.exports = router;
