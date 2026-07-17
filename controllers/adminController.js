@@ -111,7 +111,7 @@ exports.getOrders = async (req, res) => {
       `SELECT o.id, 
               u.name AS customer, 
               o.total_amount AS total, 
-              o.transaction_reference AS reference, 
+              o.transaction_id AS reference, 
               o.payment_status AS status 
        FROM orders o 
        JOIN users u ON o.user_id = u.id 
