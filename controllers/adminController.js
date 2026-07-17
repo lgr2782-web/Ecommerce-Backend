@@ -84,18 +84,26 @@ exports.updateCompanyProfile = async (req, res) => {
 // 1. Obtener listado de órdenes (SINPE) para verificar
 exports.getOrders = async (req, res) => {
   try {
-    // Consulta a tu tabla de órdenes. Traemos el id, el nombre del cliente (asumiendo relación o campo),
-    // el monto total, la referencia de pago sinpe y el estado del pedido.
+    // Intentamos hacer la consulta asumiendo que tienes una relación simple o campos directos.
+    // Si tu tabla de órdenes guarda el nombre directamente, puedes usar 'o.customer_name' o similar.
     const result = await db.query(
-      `SELECT o.id, u.name as customer, o.total_amount as total, o.sinpe_reference as reference, o.status 
-       FROM orders o 
-       JOIN users u ON o.user_id = u.id 
-       ORDER BY o.created_at DESC`
+      `SELECT id, 
+              user_id, 
+              total_amount AS total, 
+              sinpe_reference AS reference, 
+              status 
+       FROM orders 
+       ORDER BY id DESC`
     );
+    
+    // Si la consulta pasa, enviamos las filas reales
     res.json(result.rows);
   } catch (error) {
-    console.error('Error al obtener órdenes:', error);
-    res.status(500).json({ error: 'Error interno al cargar órdenes.' });
+    console.error('Error detallado en la base de datos:', error);
+    res.status(500).json({ 
+      error: 'Error interno en la consulta SQL.',
+      details: error.message // Esto nos dirá en la consola de Render EXACTAMENTE qué columna o tabla falló
+    });
   }
 };
 
