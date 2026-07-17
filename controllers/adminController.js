@@ -84,26 +84,21 @@ exports.updateCompanyProfile = async (req, res) => {
 // 1. Obtener listado de órdenes (SINPE) para verificar
 exports.getOrders = async (req, res) => {
   try {
-    // Intentamos hacer la consulta asumiendo que tienes una relación simple o campos directos.
-    // Si tu tabla de órdenes guarda el nombre directamente, puedes usar 'o.customer_name' o similar.
+    // Consulta adaptada exactamente a tu estructura de PostgreSQL
     const result = await db.query(
-      `SELECT id, 
-              user_id, 
-              total_amount AS total, 
-              sinpe_reference AS reference, 
-              status 
-       FROM orders 
-       ORDER BY id DESC`
+      `SELECT o.id, 
+              u.name AS customer, 
+              o.total_amount AS total, 
+              o.transaction_reference AS reference, 
+              o.payment_status AS status 
+       FROM orders o 
+       JOIN users u ON o.user_id = u.id 
+       ORDER BY o.created_at DESC`
     );
-    
-    // Si la consulta pasa, enviamos las filas reales
     res.json(result.rows);
   } catch (error) {
     console.error('Error detallado en la base de datos:', error);
-    res.status(500).json({ 
-      error: 'Error interno en la consulta SQL.',
-      details: error.message // Esto nos dirá en la consola de Render EXACTAMENTE qué columna o tabla falló
-    });
+    res.status(500).json({ error: 'Error interno al cargar órdenes.' });
   }
 };
 
