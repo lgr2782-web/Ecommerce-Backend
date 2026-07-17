@@ -1,7 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-// 1. Crear Admin o Colaborador (Exportación explícita)
+// 1. Crear Admin o Colaborador
 exports.createUser = async (req, res) => {
   const { name, email, password, role } = req.body;
   if (!name || !email || !password || !role) {
@@ -21,10 +21,11 @@ exports.createUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-// Asegúrate de que el middleware de autenticación (ej. requireAuth, isAdmin) esté presente
-router.get('/users', requireAuth, isAdmin, async (req, res) => {
+
+// 2. NUEVO: Listar todos los usuarios para el Admin (Corregido sin 'router' y usando 'db')
+exports.getUsers = async (req, res) => {
   try {
-    const result = await pool.query(
+    const result = await db.query(
       'SELECT id, name, email, role, is_active, created_at FROM users ORDER BY id DESC'
     );
     res.json(result.rows);
@@ -32,9 +33,9 @@ router.get('/users', requireAuth, isAdmin, async (req, res) => {
     console.error('Error al obtener usuarios:', error);
     res.status(500).json({ error: 'Error interno del servidor.' });
   }
-});
+};
 
-// 2. Borrado lógico de usuarios (Inactivación)
+// 3. Borrado lógico de usuarios (Inactivación)
 exports.deleteUserLogically = async (req, res) => {
   const { id } = req.params;
   try {
@@ -45,7 +46,7 @@ exports.deleteUserLogically = async (req, res) => {
   }
 };
 
-// 3. Panel Dashboard: Estadísticas de ventas
+// 4. Panel Dashboard: Estadísticas de ventas
 exports.getSalesDashboard = async (req, res) => {
   try {
     const totalSales = await db.query("SELECT SUM(total_amount) FROM orders WHERE status = 'Pagado'");
@@ -62,7 +63,7 @@ exports.getSalesDashboard = async (req, res) => {
   }
 };
 
-// 4. Configuración general de la PYME
+// 5. Configuración general de la PYME
 exports.updateCompanyProfile = async (req, res) => {
   const { name, cedula_juridica, email, phone, address } = req.body;
   try {
