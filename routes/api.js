@@ -89,7 +89,8 @@ router.get('/admin/dashboard', verifyToken, authorizeRoles('Administrador'), adm
 router.post('/admin/company', verifyToken, authorizeRoles('Administrador'), adminController.updateCompanyProfile);
 
 router.get('/admin/orders', verifyToken, authorizeRoles('Administrador'), adminController.getOrders);
-router.get('/admin/company', verifyToken, authorizeRoles('Administrador'), adminController.getCompanyProfile);
+//router.get('/admin/company', verifyToken, authorizeRoles('Administrador'), adminController.getCompanyProfile);
+router.get('/admin/company', adminController.getCompanyProfile);
 // === RUTAS DE ADMINISTRACIÓN ===
 // Configuración de la Compañía / PYME
 router.put(
