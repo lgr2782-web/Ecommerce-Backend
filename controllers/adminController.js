@@ -65,19 +65,41 @@ exports.getSalesDashboard = async (req, res) => {
 
 // 5. Configuración general de la PYME
 exports.updateCompanyProfile = async (req, res) => {
-  const { name, cedula_juridica, email, phone, address } = req.body;
+  const { name, phone, cedula_juridica, email, address, currency } = req.body;
+
   try {
-    const profile = await db.query(
-      `INSERT INTO company_profile (id, name, cedula_juridica, email, phone, address) 
-       VALUES (1, $1, $2, $3, $4, $5)
-       ON CONFLICT (id) DO UPDATE 
-       SET name = $1, cedula_juridica = $2, email = $3, phone = $4, address = $5, updated_at = CURRENT_TIMESTAMP
+    // 1. Primero intentamos actualizar el registro existente (ID: 1)
+    const updateResult = await db.query(
+      `UPDATE company_profile 
+       SET name = $1, 
+           phone = $2, 
+           cedula_juridica = $3, 
+           email = $4, 
+           address = $5, 
+           currency = $6,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = 1
        RETURNING *`,
-      [name, cedula_juridica, email, phone, address]
+      [name, phone, cedula_juridica, email, address, currency || 'CRC']
     );
-    res.json(profile.rows[0]);
+
+    // 2. Si la tabla estaba completamente vacía (afectó a 0 filas), creamos el registro inicial
+    if (updateResult.rows.length === 0) {
+      const insertResult = await db.query(
+        `INSERT INTO company_profile (id, name, phone, cedula_juridica, email, address, currency)
+         VALUES (1, $1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [name, phone, cedula_juridica, email, address, currency || 'CRC']
+      );
+      return res.status(201).json({ message: 'Ajustes creados con éxito', company: insertResult.rows[0] });
+    }
+
+    // Si se actualizó correctamente
+    res.json({ message: 'Ajustes actualizados con éxito', company: updateResult.rows[0] });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error al actualizar company_profile:', error);
+    res.status(500).json({ error: 'Error interno del servidor al guardar los ajustes.' });
   }
 };
 
