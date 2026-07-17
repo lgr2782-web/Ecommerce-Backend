@@ -66,6 +66,13 @@ router.post(
   upload.single('image'), 
   productController.createProduct
 );
+router.put(
+  '/products/:id', 
+  verifyToken, 
+  authorizeRoles('Colaborador', 'Administrador'), 
+  upload.single('image'), // Permite procesar una nueva imagen si se sube al editar
+  productController.updateProduct
+);
 router.patch('/products/:id/discount', verifyToken, authorizeRoles('Colaborador', 'Administrador'), productController.applyDiscount);
 
 // NUEVO: CRUD completo de Categorías usando su controlador específico

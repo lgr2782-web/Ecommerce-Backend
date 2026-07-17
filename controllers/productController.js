@@ -135,3 +135,44 @@ exports.getShopProducts = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.updateProduct = async (req, res) => {
+  const { id } = req.params;
+  const { name, sku, cabys_code, category_id, price, stock, description, is_published } = req.body;
+
+  try {
+    // 1. Verificamos si se subió una nueva imagen mediante Multer
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
+    }
+
+    // 2. Ejecutamos el UPDATE en PostgreSQL
+    // Si imageUrl es null (no se subió foto), usamos COALESCE para mantener la imagen vieja
+    const result = await db.query(
+      `UPDATE products 
+       SET name = $1, 
+           sku = $2, 
+           cabys_code = $3, 
+           category_id = $4, 
+           price = $5, 
+           stock = $6, 
+           description = $7, 
+           is_published = $8,
+           image_url = COALESCE($9, image_url),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $10
+       RETURNING *`,
+      [name, sku, cabys_code, category_id, price, stock, description, is_published, imageUrl, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Producto no encontrado.' });
+    }
+
+    res.json({ message: '✅ Producto actualizado con éxito.', product: result.rows[0] });
+  } catch (error) {
+    console.error('Error al actualizar producto:', error);
+    res.status(500).json({ error: 'Error interno al actualizar el producto. Verifique que el SKU no esté duplicado.' });
+  }
+};
