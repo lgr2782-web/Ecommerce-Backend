@@ -130,40 +130,37 @@ exports.checkout = async (req, res) => {
 // Al final de tu orderController.js añade:
 
 exports.approveOrder = async (req, res) => {
-  const orderId = req.params.id;
-  // 1. Usamos 'Pagado' para que sea compatible con restricciones de base de datos
+  // 1. Forzamos que el ID sea un número entero base 10 para que PostgreSQL no lo rechace
+  const orderId = parseInt(req.params.id, 10);
   const nuevoEstado = 'Pagado'; 
 
-  try {
-    // Verificar que db esté definido
-    if (!db || typeof db.query !== 'function') {
-      throw new Error("El módulo de la base de datos (db) no está configurado correctamente en el controlador.");
-    }
+  // Validación rápida antes de tocar la base de datos
+  if (isNaN(orderId)) {
+    return res.status(400).json({ message: 'El ID de la orden no es válido.' });
+  }
 
-    // 2. Actualizamos el estado en la base de datos
+  try {
+    // 2. Ejecutamos la consulta asegurando la compatibilidad de tipos
     const resultado = await db.query(
       'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
       [nuevoEstado, orderId]
     );
 
-    // 3. Si la orden no existía
     if (resultado.rows.length === 0) {
       return res.status(404).json({ message: 'La orden especificada no existe.' });
     }
 
-    // 4. Respondemos con éxito total
     res.status(200).json({
       success: true,
-      message: 'Orden aprobada y estado actualizado correctamente.',
+      message: 'Orden aprobada con éxito.',
       order: resultado.rows[0]
     });
 
   } catch (error) {
-    // Esto imprimirá el error exacto en la consola de Render para que lo puedas ver
-    console.error('CRÍTICO - Error en approveOrder:', error.message);
+    console.error('Error crítico en approveOrder:', error.message);
     res.status(500).json({ 
       error: 'Error interno del servidor al procesar la aprobación.',
-      details: error.message 
+      details: error.message // Asegúrate de incluir esta línea
     });
   }
 };
