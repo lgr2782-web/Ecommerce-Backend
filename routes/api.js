@@ -90,6 +90,14 @@ router.post('/admin/company', verifyToken, authorizeRoles('Administrador'), admi
 
 router.get('/admin/orders', verifyToken, authorizeRoles('Administrador'), adminController.getOrders);
 router.get('/admin/company', verifyToken, authorizeRoles('Administrador'), adminController.getCompanyProfile);
+// === RUTAS DE ADMINISTRACIÓN ===
+// Configuración de la Compañía / PYME
+router.put(
+  '/admin/company', 
+  verifyToken, 
+  authorizeRoles('Administrador'), 
+  adminController.updateCompanyProfile // O el nombre que tenga tu método en el controlador
+);
 
 
 module.exports = router;
