@@ -100,7 +100,12 @@ router.put(
 );
 // ... tus otras rutas de admin ...
 
-// 👇 Añade esta línea (Asegúrate de que use PUT y coincida con la URL del frontend)
-router.put('/admin/orders/:id/approve', authMiddleware, adminMiddleware, orderController.approveOrder);
+//  Añade esta línea (Asegúrate de que use PUT y coincida con la URL del frontend)
+router.put(
+  '/admin/orders/:id/approve', 
+  verifyToken, 
+  authorizeRoles('Administrador'), 
+  orderController.approveOrder
+);
 
 module.exports = router;
