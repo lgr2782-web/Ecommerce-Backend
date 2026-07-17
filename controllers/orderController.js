@@ -131,21 +131,27 @@ exports.checkout = async (req, res) => {
 
 exports.approveOrder = async (req, res) => {
   const orderId = req.params.id;
-  const nuevoEstado = 'Pagado y Listo para Envío';
+  // 1. Usamos 'Pagado' para que sea compatible con restricciones de base de datos
+  const nuevoEstado = 'Pagado'; 
 
   try {
-    // 1. Actualizamos el estado de la orden en la base de datos de Supabase
+    // Verificar que db esté definido
+    if (!db || typeof db.query !== 'function') {
+      throw new Error("El módulo de la base de datos (db) no está configurado correctamente en el controlador.");
+    }
+
+    // 2. Actualizamos el estado en la base de datos
     const resultado = await db.query(
       'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
       [nuevoEstado, orderId]
     );
 
-    // 2. Si la orden no existía en la base de datos, avisamos
+    // 3. Si la orden no existía
     if (resultado.rows.length === 0) {
       return res.status(404).json({ message: 'La orden especificada no existe.' });
     }
 
-    // 3. Respondemos con éxito total 200 OK
+    // 4. Respondemos con éxito total
     res.status(200).json({
       success: true,
       message: 'Orden aprobada y estado actualizado correctamente.',
@@ -153,7 +159,11 @@ exports.approveOrder = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error al aprobar la orden en el controlador:', error.message);
-    res.status(500).json({ error: 'Error interno del servidor al procesar la aprobación.' });
+    // Esto imprimirá el error exacto en la consola de Render para que lo puedas ver
+    console.error('CRÍTICO - Error en approveOrder:', error.message);
+    res.status(500).json({ 
+      error: 'Error interno del servidor al procesar la aprobación.',
+      details: error.message 
+    });
   }
 };
